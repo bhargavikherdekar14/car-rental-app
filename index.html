@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Rental App</title>
+  <style>
+    /* Reset and box sizing */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%);
+      color: #f4f4f4;
+      overflow: hidden;
+    }
+
+    #root {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      color: #333;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #2a9d8f;
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 20px 10px 25px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 12px 8px;
+      background: #264653;
+      color: white;
+      font-weight: 700;
+    }
+
+    nav button {
+      background: transparent;
+      border: 2px solid #2a9d8f;
+      color: #2a9d8f;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      flex-grow: 1;
+      max-width: 160px;
+      min-width: 100px;
+    }
+
+    nav button.active,
+    nav button:hover {
+      background: #2a9d8f;
+      color: white;
+      border-color: #256d69;
+    }
+
+    main {
+      flex-grow: 1;
+      display: flex;
+      padding: 15px 12px;
+      overflow: hidden;
+      background: #f9fafb;
+      color: #111;
+    }
+
+    .sidebar {
+      width: 270px;
+      background: #264653;
+      padding: 15px;
+      border-radius: 12px;
+      color: white;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 3px 0 15px rgba(38, 70, 83,0.7);
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .filter-group label {
+      color: #f1f1f1;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    input[type="number"] {
+      border-radius: 8px;
+      padding: 7px 12px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow 0.2s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    select:focus,
+    input[type="number"]:focus {
+      box-shadow: 0 0 6px 3px #2a9d8f88;
+    }
+
+    button {
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.primary {
+      border-radius: 25px;
+      background: #e76f51;
+      border: none;
+      padding: 12px 20px;
+      color: white;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 3px 8px rgba(231, 111, 81, 0.6);
+    }
+
+    button.primary:hover {
+      background: #cf573f;
+      box-shadow: 0 4px 12px rgba(207, 87, 63, 0.8);
+    }
+
+    button.secondary {
+      border-radius: 20px;
+      background: transparent;
+      border: 2px solid #264653;
+      padding: 8px 14px;
+      color: #264653;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
+    }
+
+    button.secondary:hover {
+      background: #264653;
+      color: white;
+    }
+
+    .content-area {
+      flex-grow: 1;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 20px 25px 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 115px);
+    }
+
+    h2, h3, h4 {
+      margin-top: 0;
+      color: #264653;
+    }
+
+    .car-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  /* Remove overflow-y: auto and fixed height */
+  overflow-y: visible;
+  max-height: none;
+  padding-right: 6px;
+  /* Allow the container to grow naturally */
+  flex-grow: 0;
+}
+
+    .car-item {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      cursor: pointer;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.3s ease;
+      user-drag: none;
+      overflow: hidden;
+      /* Increase min height to accommodate larger image and text */
+      min-height: 320px;
+    }
+
+    .car-item:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .car-item.selected {
+      box-shadow: 0 0 0 3px #2a9d8f;
+    }
+
+    .car-image {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      user-drag: none;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+    }
+
+    .car-details {
+      padding: 12px 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .car-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0 0 6px;
+      color: #264653;
+    }
+
+    .car-info-row {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .car-price {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e76f51;
+      margin-top: auto;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 400px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #264653;
+    }
+
+    input, select {
+      font-size: 1rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #ddd;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #2a9d8f;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .error {
+      background: #ffcdd2;
+      color: #b71c1c;
+    }
+
+    .success {
+      background: #c8e6c9;
+      color: #256029;
+    }
+
+    .tiny {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .profile-section {
+      max-width: 380px;
+      margin: auto;
+    }
+
+    .booking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .booking-item {
+      display: flex;
+      background: #fafafa;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      padding: 12px 15px;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .booking-item img {
+      width: 90px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 8px;
+      user-drag: none;
+    }
+
+    .booking-info {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .booking-info strong {
+      color: #264653;
+      font-weight: 700;
+    }
+
+    .booking-actions button {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      border-radius: 20px;
+      background: #e76f51;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .booking-actions button:hover {
+      background: #cf573f;
+    }
+
+    /* Scrollbar styling for WebKit browsers */
+    .car-list::-webkit-scrollbar,
+    .booking-list::-webkit-scrollbar,
+    .content-area::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .car-list::-webkit-scrollbar-thumb,
+    .booking-list::-webkit-scrollbar-thumb,
+    .content-area::-webkit-scrollbar-thumb {
+      background-color: rgba(42,157,143,0.5);
+      border-radius: 6px;
+    }
+
+    @media(max-width: 700px) {
+      #root {
+        font-size: 14px;
+      }
+
+      main {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        padding: 10px;
+        box-shadow: none;
+      }
+
+      .filter-group {
+        flex-grow: 1;
+        min-width: 140px;
+      }
+
+      .content-area {
+        max-height: none;
+        padding: 10px 15px 20px;
+      }
+
+      .car-list {
+        grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+      }
+
+      .car-item {
+        height: fit-content;
+      }
+      .rental-period-form {
+    margin-top: 30px; /* adjust as needed */
+}
+
+    }
+
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React, ReactDOM, Babel CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+
+    const { useState, useEffect, useMemo } = React;
+
+    // Car dataset extended with type and ratings for feature expansion
+    const CAR_DATA = [
+      {
+        id: 'c1',
+        name: 'Toyota Corolla',
+        make: 'Toyota',
+        model: 'Corolla',
+        year: 2021,
+        seats: 5,
+        pricePerDay: 40,
+        image:
+          'data:image/webp;base64,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',
+        type: 'Sedan',
+        rating: 4.4,
+      },
+      {
+        id: 'c2',
+        name: 'Honda Civic',
+        make: 'Honda',
+        model: 'Civic',
+        year: 2020,
+        seats: 5,
+        pricePerDay: 45,
+        image:
+          'data:image/webp;base64,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',
+        type: 'Sedan',
+        rating: 4.6,
+      },
+      {
+        id: 'c3',
+        name: 'Ford Mustang',
+        make: 'Ford',
+        model: 'Mustang',
+        year: 2019,
+        seats: 4,
+        pricePerDay: 75,
+        image:
+          'data:image/jpeg;base64,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',
+        type: 'Coupe',
+        rating: 4.8,
+      },
+      {
+        id: 'c4',
+        name: 'BMW X3',
+        make: 'BMW',
+        model: 'X3',
+        year: 2022,
+        seats: 5,
+        pricePerDay: 90,
+        image:
+          'data:image/jpeg;base64,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',
+        type: 'SUV',
+        rating: 4.7,
+      },
+      {
+        id: 'c5',
+        name: 'Tesla Model 3',
+        make: 'Tesla',
+        model: 'Model 3',
+        year: 2021,
+        seats: 5,
+        pricePerDay: 100,
+        image:
+          'data:image/jpeg;base64,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',
+        type: 'Sedan',
+        rating: 4.9,
+      },
+      {
+        id: 'c6',
+        name: 'Jeep Wrangler',
+        make: 'Jeep',
+        model: 'Wrangler',
+        year: 2019,
+        seats: 5,
+        pricePerDay: 80,
+        image:
+          'data:image/jpeg;base64,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',
+        type: 'SUV',
+        rating: 4.5,
+      },
+    ];
+
+    // localStorage keys
+    const STORAGE_KEYS = {
+      USERS: 'carRentalUsers',
+      CURRENT_USER: 'carRentalCurrentUser',
+      BOOKINGS: 'carRentalBookings',
+    };
+
+    // Utility functions for localStorage data persistence
+    function loadUsers() {
+      const users = localStorage.getItem(STORAGE_KEYS.USERS);
+      return users ? JSON.parse(users) : [];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    }
+
+    function loadCurrentUser() {
+      const user = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      return user ? JSON.parse(user) : null;
+    }
+
+    function saveCurrentUser(user) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    }
+
+    function clearCurrentUser() {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    }
+
+    function loadBookings() {
+      const bookings = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
+      return bookings ? JSON.parse(bookings) : [];
+    }
+
+    function saveBookings(bookings) {
+      localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(bookings));
+    }
+
+    // Format date string display
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString(undefined, options);
+      } catch {
+        return dateString;
+      }
+    }
+
+    // Format price display
+    function formatPrice(value) {
+      return `$${value.toFixed(2)}`;
+    }
+
+    // Star Rating display component
+    function StarRating({ rating }) {
+      const fullStars = Math.floor(rating);
+      const halfStar = rating - fullStars >= 0.5;
+      const stars = [];
+
+      for (let i = 0; i < fullStars; i++) {
+        stars.push(<span key={'full'+i} aria-hidden="true">★</span>);
+      }
+      if(halfStar) {
+        stars.push(<span key='half' aria-hidden="true" style={{ position: 'relative', display: 'inline-block'}}>
+          <span style={{color: '#ccc'}}>★</span>
+          <span style={{ color: '#e76f51', position: 'absolute', left: 0, overflow: 'hidden', width: '50%' }}>★</span>
+        </span>);
+      }
+      while(stars.length < 5) {
+        stars.push(<span key={'empty'+stars.length} style={{color:'#ccc'}} aria-hidden="true">★</span>);
+      }
+      return <span aria-label={`Rating: ${rating} out of 5 stars`} style={{color:'#e76f51'}}>{stars}</span>;
+    }
+
+    // Authentication page: login/register
+    function AuthPage({ onLogin }) {
+      const [isLoginMode, setIsLoginMode] = useState(true);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      function resetForm() {
+        setEmail('');
+        setPassword('');
+        setError('');
+      }
+
+      function switchMode() {
+        setIsLoginMode(!isLoginMode);
+        resetForm();
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        setError('');
+        if (!email.trim()) {
+          setError('Email is required.');
+          return;
+        }
+        if (!password.trim()) {
+          setError('Password is required.');
+          return;
+        }
+        if(password.length < 4) {
+          setError('Password must be at least 4 characters.');
+          return;
+        }
+        const users = loadUsers();
+        if (isLoginMode) {
+          // Login
+          const found = users.find(
+            (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+          );
+          if (found) {
+            saveCurrentUser({ email: found.email });
+            onLogin({ email: found.email });
+          } else {
+            setError('Invalid email or password.');
+          }
+        } else {
+          // Register
+          const exists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+          if (exists) {
+            setError('Email already registered.');
+            return;
+          }
+          const newUser = { email, password, fullName: '', phone: '' };
+          const updatedUsers = [...users, newUser];
+          saveUsers(updatedUsers);
+          saveCurrentUser({ email });
+          onLogin({ email });
+        }
+      }
+
+      return (
+        <div style={{maxWidth: '370px', margin: 'auto'}}>
+          <h2 style={{textAlign:'center', color:'#264653', marginBottom:'20px'}}>
+            {isLoginMode ? 'Login' : 'Register'} to Car Rental
+          </h2>
+          {error && <div className="message error" role="alert">{error}</div>}
+          <form onSubmit={handleSubmit} aria-label="Authentication form" noValidate>
+            <label htmlFor="email-input">Email:</label>
+            <input
+              id="email-input"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              aria-required="true"
+              placeholder="you@example.com"
+            />
+
+            <label htmlFor="password-input">Password (min 4 chars):</label>
+            <input
+              id="password-input"
+              type="password"
+              autoComplete={isLoginMode ? 'current-password' : 'new-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              aria-required="true"
+              minLength={4}
+              placeholder="••••••••"
+            />
+
+            <button type="submit" className="primary" aria-label={isLoginMode ? 'Login' : 'Register'}>
+              {isLoginMode ? 'Login' : 'Register'}
+            </button>
+          </form>
+          <button
+            type="button"
+            className="secondary"
+            onClick={switchMode}
+            aria-label={isLoginMode ? 'Switch to register' : 'Switch to login'}
+            style={{marginTop:'15px', width:'100%'}}
+          >
+            {isLoginMode ? 'Create New Account' : 'Back to Login'}
+          </button>
+        </div>
+      );
+    }
+
+    // Profile page for viewing/updating user info
+    function ProfilePage({ user, onUpdateUser, onLogout }) {
+      const [fullName, setFullName] = useState('');
+      const [phone, setPhone] = useState('');
+      const [email, setEmail] = useState(user.email);
+      const [message, setMessage] = useState(null);
+
+      useEffect(() => {
+        const users = loadUsers();
+        const thisUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
+        if(thisUser) {
+          setFullName(thisUser.fullName || '');
+          setPhone(thisUser.phone || '');
+        }
+      }, [user.email]);
+
+      function handleSave(e) {
+        e.preventDefault();
+        if (!email.trim()) {
+          setMessage({type:'error', text:'Email cannot be empty.'});
+          return;
+        }
+        const users = loadUsers();
+        const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+        if (idx === -1) {
+          setMessage({type:'error', text:'User not found.'});
+          return;
+        }
+        // Update user info except password (for simplicity)
+        users[idx] = {
+          ...users[idx],
+          fullName: fullName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          password: users[idx].password,
+        };
+        saveUsers(users);
+        if(user.email !== email.trim()) {
+          // Update current user email if changed
+          saveCurrentUser({ email: email.trim() });
+          onUpdateUser({ email: email.trim() });
+        }
+        setMessage({type:'success', text:'Profile updated successfully.'});
+      }
+
+      return (
+        <div className="profile-section">
+          <h2>My Profile</h2>
+          {message && <div className={`message ${message.type}`} role="alert" tabIndex={-1}>{message.text}</div>}
+          <form onSubmit={handleSave} aria-label="Update profile form" noValidate>
+            <label htmlFor="profile-email">Email:</label>
+            <input
+              id="profile-email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              aria-required="true"
+              placeholder="Email"
+            />
+
+            <label htmlFor="profile-fullname">Full Name:</label>
+            <input
+              id="profile-fullname"
+              type="text"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              placeholder="Full Name"
+            />
+
+            <label htmlFor="profile-phone">Phone Number:</label>
+            <input
+              id="profile-phone"
+              type="text"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="Phone Number"
+            />
+
+            <button type="submit" className="primary" aria-label="Save profile changes">
+              Save Changes
+            </button>
+            <button type="button" className="secondary" onClick={onLogout} aria-label="Logout and exit" style={{marginTop:'12px'}}>
+              Logout
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    // Component to show booking list for user
+    function BookingList({ bookings, onCancel }) {
+      if (bookings.length === 0) {
+        return <p style={{fontStyle: 'italic'}}>No bookings found.</p>;
+      }
+      return (
+        <div className="booking-list" role="list" aria-label="List of your bookings">
+          {bookings.map(b => (
+            <div key={b.id} className="booking-item" role="listitem">
+              <img src={b.car.image} alt={b.car.name} loading="lazy" />
+              <div className="booking-info">
+                <div><strong>{b.car.name}</strong> ({b.car.year})</div>
+                <div>Rental: {formatDate(b.rentalStart)} to {formatDate(b.rentalEnd)}</div>
+                <div>Status: <strong>{b.status}</strong></div>
+                {b.rating && <div>Rating: <StarRating rating={b.rating} /></div>}
+              </div>
+              <div className="booking-actions">
+                {b.status === 'Active' && (
+                <button aria-label={`Cancel booking for ${b.car.name} from ${formatDate(b.rentalStart)} to ${formatDate(b.rentalEnd)}`} onClick={() => onCancel(b.id)}>
+                  Cancel
+                </button>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Car search and booking page with enhanced filters and sorting
+    function SearchBookingPage({ user, onLogout }) {
+  // Search and filter states
+  const [searchText, setSearchText] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterSeats, setFilterSeats] = useState('');
+  const [filterPriceMin, setFilterPriceMin] = useState('');
+  const [filterPriceMax, setFilterPriceMax] = useState('');
+  const [sortBy, setSortBy] = useState('priceAsc');
+
+  // Rental datetime pickers
+  const [rentalDateStart, setRentalDateStart] = useState('');
+  const [rentalTimeStart, setRentalTimeStart] = useState('09:00');
+
+  const [rentalDateEnd, setRentalDateEnd] = useState('');
+  const [rentalTimeEnd, setRentalTimeEnd] = useState('17:00');
+
+  // Booking states
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [bookingStep, setBookingStep] = useState('search'); // search, bookingDetails, payment, confirm
+
+  const [bookingData, setBookingData] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [paymentMessage, setPaymentMessage] = useState(null);
+
+  // Bookings for user
+  const [userBookings, setUserBookings] = useState([]);
+
+  // Payment info
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardName: '',
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+  });
+
+  // Filter and sort cars with useMemo for performance
+  const filteredCars = useMemo(() => {
+    let cars = CAR_DATA.filter(car => {
+      const text = searchText.toLowerCase();
+      const matchesText =
+        car.name.toLowerCase().includes(text) ||
+        car.make.toLowerCase().includes(text) ||
+        car.model.toLowerCase().includes(text) ||
+        (car.year + '').includes(text);
+
+      const matchesType = filterType ? car.type === filterType : true;
+      const matchesSeats = filterSeats ? car.seats === parseInt(filterSeats) : true;
+      const matchesPriceMin = filterPriceMin ? car.pricePerDay >= Number(filterPriceMin) : true;
+      const matchesPriceMax = filterPriceMax ? car.pricePerDay <= Number(filterPriceMax) : true;
+
+      return matchesText && matchesType && matchesSeats && matchesPriceMin && matchesPriceMax;
+    });
+
+    switch(sortBy) {
+      case 'priceAsc': cars.sort((a,b) => a.pricePerDay - b.pricePerDay); break;
+      case 'priceDesc': cars.sort((a,b) => b.pricePerDay - a.pricePerDay); break;
+      case 'yearAsc': cars.sort((a,b) => a.year - b.year); break;
+      case 'yearDesc': cars.sort((a,b) => b.year - a.year); break;
+      case 'ratingDesc': cars.sort((a,b) => b.rating - a.rating); break;
+      default: break;
+    }
+    return cars;
+  }, [searchText, filterType, filterSeats, filterPriceMin, filterPriceMax, sortBy]);
+
+  // Load user bookings on mount and when bookings updated
+  useEffect(() => {
+    const bookings = loadBookings();
+    const filtered = bookings.filter(b => b.userEmail === user.email);
+    setUserBookings(filtered);
+  }, [bookingStep, user.email]);
+
+  // Helper to validate rental period
+  function validRentalPeriod() {
+    if (!rentalDateStart || !rentalDateEnd) return false;
+    try {
+      const start = new Date(`${rentalDateStart}T${rentalTimeStart}:00`);
+      const end = new Date(`${rentalDateEnd}T${rentalTimeEnd}:00`);
+      return start < end && start >= new Date();
+    } catch {
+      return false;
+    }
+  }
+
+  // Handle booking details submission
+  function handleBookingDetailsSubmit(e) {
+    e.preventDefault();
+    setMessage(null);
+    if (!selectedCar) {
+      setMessage({ type: 'error', text: 'Please select a car to book.' });
+      return;
+    }
+    if (!validRentalPeriod()) {
+      setMessage({ type: 'error', text: 'Please select valid rental start and end date/time.' });
+      return;
+    }
+    setBookingData({
+      car: selectedCar,
+      rentalStart: `${rentalDateStart}T${rentalTimeStart}:00`,
+      rentalEnd: `${rentalDateEnd}T${rentalTimeEnd}:00`,
+    });
+    setBookingStep('payment');
+  }
+
+  // Handle payment info input change
+  function handlePaymentChange(e) {
+    const { name, value } = e.target;
+    // Format card number input with spaces every 4 digits
+    if(name === 'cardNumber') {
+          let val = value.replace(/\D/g, '').slice(0,16);
+          val = val.replace(/(.{4})/g, '$1 ').trim();
+          setPaymentInfo(prev => ({...prev, [name]: val}));
+          return;
+        }
+        setPaymentInfo(prev => ({...prev, [name]: value}));
+      }
+
+      // Validate payment details roughly
+      function validatePayment() {
+        const { cardName, cardNumber, expiry, cvv } = paymentInfo;
+
+        if(!cardName.trim()) return false;
+        if(!/^\d{4} \d{4} \d{4} \d{4}$/.test(cardNumber)) return false;
+        if(!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) return false;
+
+        const now = new Date();
+        const [month, year] = expiry.split('/');
+        const expDate = new Date(`20${year}`, Number(month));
+        if(expDate < now) return false;
+
+        if(!/^\d{3,4}$/.test(cvv)) return false;
+        return true;
+      }
+
+      // Handle payment form submission
+      function handlePaymentSubmit(e) {
+        e.preventDefault();
+        setPaymentMessage(null);
+        if(!validatePayment()) {
+          setPaymentMessage({type:'error', text:'Please enter valid payment details. Card number must be 16 digits (formatted), expiry MM/YY and CVV 3 or 4 digits.'});
+          return;
+        }
+
+        // Save booking to localStorage
+        const bookings = loadBookings();
+        bookings.push({
+          id: 'b'+Date.now(),
+          userEmail: user.email,
+          car: bookingData.car,
+          rentalStart: bookingData.rentalStart,
+          rentalEnd: bookingData.rentalEnd,
+          timestamp: new Date().toISOString(),
+          status: 'Active',
+          rating: null,
+        });
+        saveBookings(bookings);
+
+        setPaymentMessage({type:'success', text:'Payment successful! Booking confirmed.'});
+
+        setBookingStep('confirm');
+      }
+
+      // Cancel booking handler
+      function handleCancelBooking(bookingId) {
+        if(!window.confirm('Are you sure you want to cancel this booking?')) return;
+        let bookings = loadBookings();
+        bookings = bookings.map(b => b.id === bookingId ? {...b, status: 'Cancelled'} : b);
+        saveBookings(bookings);
+        setUserBookings(userBookings.map(b => b.id === bookingId ? {...b, status: 'Cancelled'} : b));
+      }
+
+      // Rating a past booking (simple)
+      function handleRateBooking(id, rating) {
+        let bookings = loadBookings();
+        bookings = bookings.map(b => b.id === id ? {...b, rating} : b);
+        saveBookings(bookings);
+        setUserBookings(userBookings.map(b => b.id === id ? {...b, rating} : b));
+      }
+
+      // Calculate total rental days
+      function rentalDays() {
+        if(!bookingData) return 0;
+        const start = new Date(bookingData.rentalStart);
+        const end = new Date(bookingData.rentalEnd);
+        const msPerDay = 1000*60*60*24;
+        return Math.ceil((end - start) / msPerDay);
+      }
+
+      // Calculate total price
+      function totalPrice() {
+        if(!bookingData) return 0;
+        return rentalDays() * bookingData.car.pricePerDay;
+      }
+
+      return (
+        <>
+          <nav aria-label="Page navigation">
+            <button
+              className={bookingStep === 'search' || bookingStep === 'bookingDetails' ? 'active' : ''}
+              onClick={() => setBookingStep('search')}
+              aria-current={bookingStep === 'search' || bookingStep === 'bookingDetails' ? 'page' : undefined}
+              aria-label="Car Search and Booking"
+              type="button"
+            >
+              Search & Book
+            </button>
+            <button
+              className={bookingStep === 'confirm' ? 'active' : ''}
+              onClick={() => setBookingStep('confirm')}
+              aria-current={bookingStep === 'confirm' ? 'page' : undefined}
+              aria-label="My Bookings"
+              type="button"
+            >
+              My Bookings
+            </button>
+            <button
+              className={bookingStep === 'profile' ? 'active' : ''}
+              onClick={() => setBookingStep('profile')}
+              aria-current={bookingStep === 'profile' ? 'page' : undefined}
+              aria-label="My Profile"
+              type="button"
+            >
+              My Profile
+            </button>
+            <button
+              className=""
+              onClick={() => {
+                clearCurrentUser();
+                onLogout();
+              }}
+              aria-label="Logout"
+              type="button"
+              style={{color:'#e76f51', borderColor:'#e76f51', flexGrow:1, maxWidth:'100px'}}
+            >
+              Logout
+            </button>
+          </nav>
+
+          <main>
+            {(bookingStep === 'search' || bookingStep === 'bookingDetails') && (
+              <>
+                <aside className="sidebar" aria-label="Car Filters">
+                  <h3>Filters</h3>
+                  <div className="filter-group">
+                    <label htmlFor="searchText">Search Make, Model, Name</label>
+                    <input id="searchText" type="text" value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="e.g. Toyota" />
+                  </div>
+
+                  <div className="filter-group">
+                    <label htmlFor="filterType">Car Type</label>
+                    <select id="filterType" value={filterType} onChange={e => setFilterType(e.target.value)}>
+                      <option value="">Any</option>
+                      <option value="Sedan">Sedan</option>
+                      <option value="SUV">SUV</option>
+                      <option value="Coupe">Coupe</option>
+                    </select>
+                  </div>
+
+                  <div className="filter-group">
+                    <label htmlFor="filterSeats">Seats</label>
+                    <select id="filterSeats" value={filterSeats} onChange={e => setFilterSeats(e.target.value)}>
+                      <option value="">Any</option>
+                      <option value="2">2</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                    </select>
+                  </div>
+
+                  <div className="filter-group">
+                    <label>Price Range ($/day)</label>
+                    <div style={{display:'flex', gap:'10px'}}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        placeholder="Min"
+                        value={filterPriceMin}
+                        onChange={e => setFilterPriceMin(e.target.value)}
+                        aria-label="Minimum price"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        placeholder="Max"
+                        value={filterPriceMax}
+                        onChange={e => setFilterPriceMax(e.target.value)}
+                        aria-label="Maximum price"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="filter-group">
+                    <label htmlFor="sortBy">Sort By</label>
+                    <select id="sortBy" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                      <option value="priceAsc">Price: Low to High</option>
+                      <option value="priceDesc">Price: High to Low</option>
+                      <option value="yearAsc">Year: Oldest First</option>
+                      <option value="yearDesc">Year: Newest First</option>
+                      <option value="ratingDesc">Rating: High to Low</option>
+                    </select>
+                  </div>
+                </aside>
+
+                <section className="content-area" aria-label="Car search and booking area">
+                  {bookingStep === 'search' && <>
+                    <h2>Available Cars</h2>
+                    {filteredCars.length === 0 ? (
+                      <p style={{fontStyle:'italic'}}>No cars found matching your criteria.</p>
+                    ) : (
+                      <div className="car-list" role="list">
+                        {filteredCars.map(car => (
+                          <article
+                            key={car.id}
+                            className={`car-item ${selectedCar && selectedCar.id === car.id ? 'selected' : ''}`}
+                            onClick={() => setSelectedCar(car)}
+                            tabIndex={0}
+                            onKeyDown={e => {
+                              if(e.key==='Enter' || e.key===' ') {
+                                setSelectedCar(car);
+                              }
+                            }}
+                            role="listitem"
+                            aria-selected={selectedCar && selectedCar.id === car.id}
+                            aria-label={`${car.name} ${car.year}, ${car.type}, Seats: ${car.seats}, Price: ${formatPrice(car.pricePerDay)}, Rating: ${car.rating}`}
+                          >
+                            <img src={car.image} alt={`${car.name}`} className="car-image" />
+                            <div className="car-details">
+                              <div className="car-name">{car.name}</div>
+                              <div className="car-info-row">Year: {car.year} | Seats: {car.seats} | Type: {car.type}</div>
+                              <div className="car-info-row">Rating: <StarRating rating={car.rating} /></div>
+                              <div className="car-price">{formatPrice(car.pricePerDay)}/day</div>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      if(!selectedCar) {
+                        setMessage({type:'error', text:'Please select a car to book.'});
+                        return;
+                      }
+                      if(!validRentalPeriod()) {
+                        setMessage({type:'error', text:'Please select valid rental start and end date/time.'});
+                        return;
+                      }
+                      setMessage(null);
+                      setBookingStep('bookingDetails');
+                    }} noValidate aria-label="Select rental date and time form" style={{marginTop:'20px', maxWidth:'450px'}}>
+                      <fieldset style={{border:'1.5px solid #ccc', borderRadius:'8px', padding:'15px'}}>
+                        <legend style={{fontWeight:'700', color:'#264653'}}>Select Rental Period</legend>
+
+                        <div style={{display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'12px'}}>
+                          <div style={{flexGrow:1, minWidth:'150px'}}>
+                            <label htmlFor="rentalDateStart">Start Date</label>
+                            <input
+                              type="date"
+                              id="rentalDateStart"
+                              value={rentalDateStart}
+                              onChange={e => setRentalDateStart(e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              required
+                              aria-required="true"
+                              aria-describedby="rentalDateStartDesc"
+                            />
+                            <div id="rentalDateStartDesc" className="tiny">Pick start day</div>
+                          </div>
+                          <div style={{flexGrow:1, minWidth:'110px'}}>
+                            <label htmlFor="rentalTimeStart">Start Time</label>
+                            <input
+                              type="time"
+                              id="rentalTimeStart"
+                              value={rentalTimeStart}
+                              onChange={e => setRentalTimeStart(e.target.value)}
+                              required
+                              aria-required="true"
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{display:'flex', gap:'12px', flexWrap:'wrap'}}>
+                          <div style={{flexGrow:1, minWidth:'150px'}}>
+                            <label htmlFor="rentalDateEnd">End Date</label>
+                            <input
+                              type="date"
+                              id="rentalDateEnd"
+                              value={rentalDateEnd}
+                              onChange={e => setRentalDateEnd(e.target.value)}
+                              min={rentalDateStart || new Date().toISOString().split('T')[0]}
+                              required
+                              aria-required="true"
+                              aria-describedby="rentalDateEndDesc"
+                            />
+                            <div id="rentalDateEndDesc" className="tiny">Pick end day</div>
+                          </div>
+                          <div style={{flexGrow:1, minWidth:'110px'}}>
+                            <label htmlFor="rentalTimeEnd">End Time</label>
+                            <input
+                              type="time"
+                              id="rentalTimeEnd"
+                              value={rentalTimeEnd}
+                              onChange={e => setRentalTimeEnd(e.target.value)}
+                              required
+                              aria-required="true"
+                            />
+                          </div>
+                        </div>
+                      </fieldset>
+
+                      {message && <div className={`message ${message.type}`} role="alert">{message.text}</div>}
+
+                      <button
+                        type="submit"
+                        className="primary"
+                        disabled={!selectedCar || !validRentalPeriod()}
+                        aria-label="Proceed to booking details"
+                        style={{marginTop:'15px', width:'100%'}}
+                      >
+                        Proceed to Booking Details
+                      </button>
+
+                    </form>
+                  </>}
+
+                  {bookingStep === 'bookingDetails' && selectedCar && (
+                    <>
+                      <h2>Booking Details</h2>
+                      <p><strong>Car:</strong> {selectedCar.name} ({selectedCar.year})</p>
+                      <p><strong>Rental Period:</strong> {formatDate(rentalDateStart)} {rentalTimeStart} - {formatDate(rentalDateEnd)} {rentalTimeEnd}</p>
+                      <p><strong>Days:</strong> {rentalDays()}</p>
+                      <p><strong>Price per day:</strong> {formatPrice(selectedCar.pricePerDay)}</p>
+                      <p><strong>Total price:</strong> {formatPrice(totalPrice())}</p>
+
+                      <button
+                        className="secondary"
+                        onClick={() => setBookingStep('search')}
+                        aria-label="Back to search"
+                        style={{marginBottom:'18px'}}
+                      >
+                        Back to Search
+                      </button>
+
+                      <button
+                        className="primary"
+                        onClick={() => setBookingStep('payment')}
+                        aria-label="Proceed to payment"
+                      >
+                        Proceed to Payment
+                      </button>
+                    </>
+                  )}
+
+                  {bookingStep === 'payment' && bookingData && (
+                    <>
+                      <h2>Payment</h2>
+                      <form onSubmit={handlePaymentSubmit} aria-label="Payment form" noValidate style={{maxWidth:'400px'}}>
+                        <label htmlFor="cardName">Cardholder Name</label>
+                        <input
+                          id="cardName"
+                          type="text"
+                          name="cardName"
+                          value={paymentInfo.cardName}
+                          onChange={handlePaymentChange}
+                          required
+                          aria-required="true"
+                          placeholder="John Doe"
+                        />
+
+                        <label htmlFor="cardNumber">Card Number</label>
+                        <input
+                          id="cardNumber"
+                          type="text"
+                          name="cardNumber"
+                          value={paymentInfo.cardNumber}
+                          onChange={handlePaymentChange}
+                          maxLength={19}
+                          placeholder="1234 5678 9012 3456"
+                          pattern="\d{4} \d{4} \d{4} \d{4}"
+                          inputMode="numeric"
+                          required
+                          aria-required="true"
+                          aria-describedby="cardNumberDesc"
+                        />
+                        <div id="cardNumberDesc" className="tiny">Enter 16-digit card number with spaces.</div>
+
+                        <label htmlFor="expiry">Expiry Date (MM/YY)</label>
+                        <input
+                          id="expiry"
+                          type="text"
+                          name="expiry"
+                          value={paymentInfo.expiry}
+                          onChange={handlePaymentChange}
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          required
+                          aria-required="true"
+                          pattern="(0[1-9]|1[0-2])\/\d{2}"
+                          aria-describedby="expiryDesc"
+                        />
+                        <div id="expiryDesc" className="tiny">Format: MM/YY</div>
+
+                        <label htmlFor="cvv">CVV</label>
+                        <input
+                          id="cvv"
+                          type="password"
+                          name="cvv"
+                          value={paymentInfo.cvv}
+                          onChange={handlePaymentChange}
+                          maxLength={4}
+                          required
+                          aria-required="true"
+                          placeholder="123"
+                          inputMode="numeric"
+                        />
+
+                        {paymentMessage && <div className={`message ${paymentMessage.type}`} role="alert">{paymentMessage.text}</div>}
+
+                        <button type="submit" className="primary" aria-label="Pay and book">
+                          Pay & Book
+                        </button>
+
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => { setBookingStep('bookingDetails'); setPaymentMessage(null); }}
+                          aria-label="Back to booking details"
+                          style={{marginTop: '12px'}}
+                        >
+                          Back to Booking Details
+                        </button>
+                      </form>
+                    </>
+                  )}
+
+                  {bookingStep === 'confirm' && (
+                    <>
+                      <h2>My Bookings</h2>
+                      <BookingList bookings={userBookings} onCancel={handleCancelBooking} />
+
+                      <button
+                        className="primary"
+                        onClick={() => {
+                          setSelectedCar(null);
+                          setBookingStep('search');
+                          setMessage(null);
+                          setPaymentMessage(null);
+                          setBookingData(null);
+                          setPaymentInfo({
+                            cardName: '',
+                            cardNumber: '',
+                            expiry: '',
+                            cvv: '',
+                          });
+                        }}
+                        style={{marginTop:'25px', width:'220px', alignSelf:'center'}}
+                        aria-label="Make another booking"
+                      >
+                        Make Another Booking
+                      </button>
+                    </>
+                  )}
+
+                  {bookingStep === 'profile' && (
+                    <ProfilePage
+                      user={user}
+                      onUpdateUser={() => {}}
+                      onLogout={() => {
+                        clearCurrentUser();
+                        onLogout();
+                      }}
+                    />
+                  )}
+                </section>
+              </>
+            )}
+          </main>
+        </>
+      );
+    }
+
+    // Main app component
+    function App() {
+      const [currentUser, setCurrentUser] = useState(null);
+
+      useEffect(() => {
+        const user = loadCurrentUser();
+        if (user) setCurrentUser(user);
+      }, []);
+
+      return (
+        <>
+          <header tabIndex={-1}>Car Rental App</header>
+          {!currentUser ? (
+            <AuthPage onLogin={(user) => setCurrentUser(user)} />
+          ) : (
+            <SearchBookingPage user={currentUser} onLogout={() => setCurrentUser(null)} />
+          )}
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+  </script>
+</body>
+</html>
+</content>
+</create_file>
